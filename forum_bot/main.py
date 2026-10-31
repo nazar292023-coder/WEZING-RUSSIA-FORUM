@@ -1,6 +1,8 @@
+
 import os
 import logging
 from telegram import Update, ReplyKeyboardMarkup
+from telegram.request import HTTPXRequest
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -9,7 +11,10 @@ from telegram.ext import (
     filters
 )
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
+)
 
 TOKEN = os.getenv("BOT_TOKEN")
 
@@ -24,19 +29,19 @@ MENU = [
 ]
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = ReplyKeyboardMarkup(
-        MENU,
-        resize_keyboard=True
-    )
+    keyboard = ReplyKeyboardMarkup(MENU, resize_keyboard=True)
 
     await update.message.reply_text(
         "👋 Добро пожаловать на форум WEZING RUSSIA!\n\n"
-        "Здесь ты можешь подать заявку, ознакомиться "
-        "с правилами и обратиться в техническую поддержку.",
+        "Здесь ты можешь подать заявку, ознакомиться с правилами "
+        "и обратиться в техническую поддержку.",
         reply_markup=keyboard
     )
 
 async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.message or not update.message.text:
+        return
+
     text = update.message.text
 
     answers = {
@@ -58,13 +63,27 @@ def main():
     if not TOKEN:
         raise RuntimeError("Не задан BOT_TOKEN в переменных окружения!")
 
-    app = Application.builder().token(TOKEN).build()
+    request = HTTPXRequest(
+        connection_pool_size=8,
+        connect_timeout=60,
+        read_timeout=60,
+        write_timeout=60,
+        pool_timeout=60
+    )
+
+    app = (
+        Application.builder()
+        .token(TOKEN)
+        .request(request)
+        .build()
+    )
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, buttons))
 
-    print("WEZING RUSSIA BOT запущен!")
+    print("WEZING RUSSIA BOT запускается...")
     app.run_polling()
 
 if __name__ == "__main__":
     main()
+    
