@@ -1,0 +1,13 @@
+import os
+
+BOT_TOKEN = os.getenv("BOT_TOKEN", "")
+OWNER_ID = int(os.getenv("OWNER_ID", "0"))
+
+PROJECT_NAME = "WEZING RUSSIA"
+BOT_NAME = "WEZING RUSSIA | FORUM BOT"
+
+DATABASE_PATH = "forum_bot.db"
+
+TEST_TIME = 300
+RETRY_DAYS = 3
+TEST_QUESTIONS = 20
